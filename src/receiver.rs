@@ -29,12 +29,7 @@ impl Receiver {
         let mut buffer: [Octet; 2048] = [0; 2048];
         let (read, _) = self.socket.recv_from(&mut buffer).map_err(Error::IoError)?;
 
-        let mut vec = buffer.to_vec();
-        unsafe {
-            vec.set_len(read);
-        }
-
-        Packet::try_from(&vec as &Octets).map_err(Error::PacketError)
+        Packet::try_from(&buffer[..read] as &Octets).map_err(Error::PacketError)
     }
 }
 
