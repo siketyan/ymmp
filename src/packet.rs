@@ -1,6 +1,15 @@
-use crate::header::Header;
-use crate::Octet;
+use std::convert::TryFrom;
 
+use crate::header::{Header, HeaderOctets, HEADER_LENGTH};
+use crate::{Octet, Octets};
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("Too short packet found.")]
+    PacketTooShort,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Packet {
     header: Header,
     message: Vec<Octet>,
@@ -11,6 +20,13 @@ impl Packet {
         Self {
             header: Header::default(),
             message,
+        }
+    }
+
+    pub fn from_raw_parts(header: &HeaderOctets, message: &Octets) -> Self {
+        Self {
+            header: Header::from(header),
+            message: message.to_vec(),
         }
     }
 
@@ -30,9 +46,36 @@ impl Default for Packet {
     }
 }
 
+impl TryFrom<&Octets> for Packet {
+    type Error = Error;
+
+    fn try_from(value: &Octets) -> Result<Self, Self::Error> {
+        if value.len() < HEADER_LENGTH + 8 {
+            Err(Error::PacketTooShort)
+        } else {
+            let mut header = HeaderOctets::default();
+            header.copy_from_slice(&value[0..HEADER_LENGTH]);
+
+            let offset = HEADER_LENGTH + 8;
+            let mut length: [Octet; 8] = [0; 8];
+            length.copy_from_slice(&value[HEADER_LENGTH..offset]);
+
+            let length = u64::from_le_bytes(length);
+            let rest = &value[offset..];
+
+            // TODO: Support Fragmentation
+            assert_eq!(length as usize, rest.len());
+
+            Ok(Packet::from_raw_parts(&header, rest))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::packet::Packet;
+    use crate::Octets;
+    use std::convert::TryFrom;
 
     #[test]
     fn default() {
@@ -56,5 +99,17 @@ mod tests {
         assert_eq!(header_len + 8 + message.len(), bytes.len());
         assert_eq!(&header_bytes, &bytes[..header_len]);
         assert_eq!(&message, &bytes[header_len + 8..]);
+    }
+
+    #[test]
+    fn try_from_header_only() {
+        let octets = vec![
+            b'Y', b'M', b'M', b'P', b'v', b'1', b'.', b'0', 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+
+        let octets: &Octets = octets.as_slice();
+        let packet = Packet::try_from(octets).expect("failed");
+
+        assert_eq!(0, packet.message.len())
     }
 }
