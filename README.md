@@ -11,17 +11,19 @@ The lower layer protocol is UDP (User Diagram Protocol), and uses port 17339 by 
 ```rust
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
-let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 17339);
-let target = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::BROADCAST, 17339));
-let broadcaster = ymmp::Broadcaster::bind(addr, target);
+fn main() {
+    let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 17339);
+    let target = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::BROADCAST, 17339));
+    let broadcaster = ymmp::Broadcaster::bind(addr, target);
 
-let message = vec![b'h', b'e', b'l', b'l', b'o'];
-let packet = ymmp::Packet::new(message);
+    let message = vec![b'h', b'e', b'l', b'l', b'o'];
+    let packet = ymmp::Packet::new(message);
 
-broadcaster
-    .broadcast(packet)
-    .expect("Failed to broadcast.")
-;
+    broadcaster
+        .broadcast(packet)
+        .expect("Failed to broadcast.")
+    ;
+}
 ```
 
 ## Diagram
