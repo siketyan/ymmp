@@ -7,10 +7,10 @@ pub struct Packet {
 }
 
 impl Packet {
-    fn new(payload: Vec<Octet>) -> Self {
+    pub fn new(message: Vec<Octet>) -> Self {
         Self {
             header: Header::default(),
-            message: payload,
+            message,
         }
     }
 
