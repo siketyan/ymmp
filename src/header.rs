@@ -43,21 +43,6 @@ impl Default for Header {
     }
 }
 
-impl Into<[Octet; 8]> for Header {
-    fn into(self) -> [Octet; 8] {
-        [
-            self.magic[0],
-            self.magic[1],
-            self.magic[2],
-            self.magic[3],
-            self.version[0],
-            self.version[1],
-            self.version[2],
-            self.version[3],
-        ]
-    }
-}
-
 impl From<&HeaderOctets> for Header {
     fn from(value: &HeaderOctets) -> Self {
         let mut magic = Magic::default();
