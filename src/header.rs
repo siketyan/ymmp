@@ -15,7 +15,7 @@ pub struct Header {
 }
 
 const MAGIC: Magic = [b'Y', b'M', b'M', b'P'];
-const VERSION: Version = [b'v', b'1', b'.', b'0'];
+const VERSION: Version = [b'v', b'0', b'.', b'1'];
 
 impl Header {
     pub fn from_raw_parts(magic: &Magic, version: &Version) -> Self {
@@ -65,6 +65,6 @@ mod tests {
         let bytes = header.to_octets_vec();
 
         assert_eq!(8, bytes.len());
-        assert_eq!(vec![b'Y', b'M', b'M', b'P', b'v', b'1', b'.', b'0'], bytes);
+        assert_eq!(vec![b'Y', b'M', b'M', b'P', b'v', b'0', b'.', b'1'], bytes);
     }
 }

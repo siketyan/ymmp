@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn try_from_header_only() {
         let octets = vec![
-            b'Y', b'M', b'M', b'P', b'v', b'1', b'.', b'0', 0, 0, 0, 0, 0, 0, 0, 0,
+            b'Y', b'M', b'M', b'P', b'v', b'0', b'.', b'1', 0, 0, 0, 0, 0, 0, 0, 0,
         ];
 
         let octets: &Octets = octets.as_slice();
