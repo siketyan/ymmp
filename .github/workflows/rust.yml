@@ -1,7 +1,10 @@
 name: Rust
 
 on:
-  - push
+  push: ~
+  release:
+    types:
+      - published
 
 env:
   CARGO_TERM_COLOR: always
@@ -49,4 +52,49 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: --verbose
+
+  deploy:
+    runs-on: ubuntu-20.04
+    needs: [ build ]
+    if: ${{ github.event_name == 'release' }}
+
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt,clippy
+
+      - name: Install cargo-edit-version
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: --verbose cargo-edit-version
+
+      - name: Set version by the release tag
+        uses: actions-rs/cargo@v1
+        with:
+          command: edit-version
+          args: ${{ github.event.release.tag_name }}
+
+      - name: Log into crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          command: login
+          args: ${{ secrets.CRATES_IO_TOKEN }}
+
+      - name: Publish to crates.io
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
           args: --verbose
