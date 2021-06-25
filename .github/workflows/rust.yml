@@ -93,10 +93,7 @@ jobs:
           args: --verbose cargo-edit-version
 
       - name: Set version by the release tag
-        uses: actions-rs/cargo@v1
-        with:
-          command: edit-version
-          args: ${{ github.event.release.tag_name }}
+        run: cargo-edit-version ${{ github.event.release.tag_name }}
 
       - name: Log into crates.io
         uses: actions-rs/cargo@v1
