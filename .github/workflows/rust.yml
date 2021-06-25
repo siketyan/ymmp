@@ -54,12 +54,21 @@ jobs:
           command: test
           args: --verbose
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: workspace
+          path: '.'
+
   deploy:
     runs-on: ubuntu-20.04
     needs: [ build ]
     if: ${{ github.event_name == 'release' }}
 
     steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: workspace
+
       - uses: actions/cache@v2
         with:
           path: |
