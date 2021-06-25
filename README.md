@@ -44,8 +44,8 @@ fn main() {
   <tbody>
     <tr>
       <th scope="row">0</th>
-      <td colspan="4">Magic Bytes (`YMMP`)</td>
-      <td colspan="4">Version (`v1.0`)</td>
+      <td colspan="4">Magic Bytes (<code>YMMP</code>)</td>
+      <td colspan="4">Version (<code>v0.1</code>)</td>
     </tr>
     <tr>
       <th scope="row">8</th>
