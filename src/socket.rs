@@ -1,5 +1,5 @@
 use std::convert::TryFrom;
-use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
+use std::net::{ToSocketAddrs, UdpSocket};
 
 use crate::{Octet, Octets, Packet};
 
@@ -7,6 +7,9 @@ use crate::{Octet, Octets, Packet};
 pub enum Error {
     #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
+
+    #[error("Packet error: {0}")]
+    PacketError(#[from] crate::packet::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -30,7 +33,7 @@ impl YmmpSocket {
 
     pub fn receive(&self) -> Result<Packet> {
         let mut buffer: [Octet; 2048] = [0; 2048];
-        let (read, _) = self.socket.recv_from(&mut buffer).map_err(Error::IoError)?;
+        let (read, _) = self.udp.recv_from(&mut buffer).map_err(Error::IoError)?;
 
         Packet::try_from(&buffer[..read] as &Octets).map_err(Error::PacketError)
     }
