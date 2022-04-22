@@ -1,4 +1,5 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
+use std::string::FromUtf8Error;
 
 use crate::header::{Header, HeaderOctets, HEADER_LENGTH};
 use crate::{Octet, Octets};
@@ -38,6 +39,10 @@ impl Packet {
 
         vec
     }
+
+    pub fn message(&self) -> &[Octet] {
+        &self.message
+    }
 }
 
 impl Default for Packet {
@@ -68,6 +73,14 @@ impl TryFrom<&Octets> for Packet {
 
             Ok(Packet::from_raw_parts(&header, rest))
         }
+    }
+}
+
+impl TryInto<String> for Packet {
+    type Error = FromUtf8Error;
+
+    fn try_into(self) -> Result<String, Self::Error> {
+        String::from_utf8(self.message)
     }
 }
 
