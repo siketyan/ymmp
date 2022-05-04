@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
-use std::net::{ToSocketAddrs, UdpSocket};
+
+use tokio::net::{ToSocketAddrs, UdpSocket};
 
 use crate::{Octet, Octets, Packet};
 
@@ -19,15 +20,19 @@ pub struct Receiver {
 }
 
 impl Receiver {
-    pub fn open<A: ToSocketAddrs>(addr: A) -> Result<Self> {
+    pub async fn open<A: ToSocketAddrs>(addr: A) -> Result<Self> {
         Ok(Self {
-            socket: UdpSocket::bind(addr).map_err(Error::IoError)?,
+            socket: UdpSocket::bind(addr).await.map_err(Error::IoError)?,
         })
     }
 
-    pub fn receive(&self) -> Result<Packet> {
+    pub async fn receive(&self) -> Result<Packet> {
         let mut buffer: [Octet; 2048] = [0; 2048];
-        let (read, _) = self.socket.recv_from(&mut buffer).map_err(Error::IoError)?;
+        let (read, _) = self
+            .socket
+            .recv_from(&mut buffer)
+            .await
+            .map_err(Error::IoError)?;
 
         Packet::try_from(&buffer[..read] as &Octets).map_err(Error::PacketError)
     }
