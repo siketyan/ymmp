@@ -46,17 +46,17 @@ mod tests {
     use crate::packet::Packet;
     use crate::receiver::Receiver;
 
-    #[test]
-    fn broadcast_and_receive() {
+    #[tokio::test]
+    async fn broadcast_and_receive() {
         let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 11223);
         let target = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 22334));
-        let broadcaster = Broadcaster::open(addr, target).unwrap();
-        let receiver = Receiver::open(target).unwrap();
+        let broadcaster = Broadcaster::open(addr, target).await.unwrap();
+        let receiver = Receiver::open(target).await.unwrap();
         let packet = Packet::new(vec![]);
 
-        broadcaster.broadcast(&packet).unwrap();
+        broadcaster.broadcast(&packet).await.unwrap();
 
-        let received = receiver.receive().unwrap();
+        let received = receiver.receive().await.unwrap();
 
         assert_eq!(packet, received);
     }

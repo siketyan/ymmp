@@ -39,13 +39,15 @@ mod tests {
 
     use crate::{Broadcaster, Packet};
 
-    #[test]
-    fn broadcast() {
+    #[tokio::test]
+    async fn broadcast() {
         let port = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 12345);
         let target = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 255), 12345);
-        let broadcaster = Broadcaster::open(port, SocketAddr::V4(target)).expect("failed");
+        let broadcaster = Broadcaster::open(port, SocketAddr::V4(target))
+            .await
+            .expect("failed");
         let packet = Packet::default();
-        let sent = broadcaster.broadcast(&packet).expect("failed");
+        let sent = broadcaster.broadcast(&packet).await.expect("failed");
 
         assert_eq!(packet.to_octets_vec().len(), sent);
     }
