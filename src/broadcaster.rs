@@ -1,4 +1,6 @@
-use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
+use std::net::SocketAddr;
+
+use tokio::net::{ToSocketAddrs, UdpSocket};
 
 use crate::Packet;
 
@@ -16,16 +18,17 @@ pub struct Broadcaster {
 }
 
 impl Broadcaster {
-    pub fn open<A: ToSocketAddrs>(addr: A, target: SocketAddr) -> Result<Self> {
+    pub async fn open<A: ToSocketAddrs>(addr: A, target: SocketAddr) -> Result<Self> {
         Ok(Self {
-            socket: UdpSocket::bind(addr).map_err(Error::IoError)?,
+            socket: UdpSocket::bind(addr).await.map_err(Error::IoError)?,
             target,
         })
     }
 
-    pub fn broadcast(&self, packet: &Packet) -> Result<usize> {
+    pub async fn broadcast(&self, packet: &Packet) -> Result<usize> {
         self.socket
             .send_to(packet.to_octets_vec().as_slice(), self.target)
+            .await
             .map_err(Error::IoError)
     }
 }
@@ -36,13 +39,15 @@ mod tests {
 
     use crate::{Broadcaster, Packet};
 
-    #[test]
-    fn broadcast() {
+    #[tokio::test]
+    async fn broadcast() {
         let port = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 12345);
         let target = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 255), 12345);
-        let broadcaster = Broadcaster::open(port, SocketAddr::V4(target)).expect("failed");
+        let broadcaster = Broadcaster::open(port, SocketAddr::V4(target))
+            .await
+            .expect("failed");
         let packet = Packet::default();
-        let sent = broadcaster.broadcast(&packet).expect("failed");
+        let sent = broadcaster.broadcast(&packet).await.expect("failed");
 
         assert_eq!(packet.to_octets_vec().len(), sent);
     }
